@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Giường Báo Thức</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+    <meta charset='utf-8'>
+    <style>
+body {
+  max-width: 100%;
+  margin: auto;
+}
+
+.wf-gr {
+  position: relative;
+  margin: auto;
+  width: 100%;
+  text-align: center;
+}
+
+.wf-ip {
+  color: black;
+  width: 80%;
+  height: 40px;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.wf-btn {
+  margin-bottom: 40px;
+  position: absolute;
+  width: 10vh;
+  height: 5vh;
+  left: 50%;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: medium;
+  border-style: none;
+  background: linear-gradient(to bottom, #9bff9b 0%, #00a800 100%);
+  transform:translate(-50%);
+}
+
+.wf-btn:active {
+  background: linear-gradient(to bottom, #ffffff 0%, #00f000 100%);
+}
+
+</style>
+</head>
+<body>
+<h1 style='text-align: center;'>Giường Báo Thức</h1>
+<h2 style='text-align: center;'>Khối lượng: <span id='weight'></span></h2>
+<div class='wf-gr' id='wf-gr'>
+    <h1 style='text-align: center;'>WiFi Settings</h1>
+    <div><input type='text' placeholder='WiFi SSID' class='wf-ip' id='wf-ssid'></div>
+    <div><input type='password' placeholder='WiFi Password' class='wf-ip' id='wf-pw'></div>
+    <button class='wf-btn' onclick='saveWiFiPw();'>Save</button>
+</div>
+<div class='wf-gr' id='wf-gr'>
+  <h1 style='text-align: center;'>Cài đặt thời gian</h1>
+  <div><input type='time' placeholder='Thời gian' id='set-time'></div>
+  <button class='wf-btn' onclick='saveTime();'>Save</button>
+</div>
+
+
+</body>
+<script>
+var gateway = 'ws://'+window.location.hostname+'/ws';
+var websocket;
+
+function initWebSocket() {
+  console.log('Trying to open a WebSocket connection...');
+  websocket = new WebSocket(gateway);
+  websocket.onopen    = onOpen;
+  websocket.onclose   = onClose;
+  websocket.onmessage = onMessage;
+};
+
+function onMessage(event) {
+    console.log(event.data);
+    document.getElementById('weight').innerHTML=event.data;
+}
+
+function onOpen(event) {
+  console.log('Connection opened');
+};
+function onClose(event) {
+  console.log('Connection closed');
+  setTimeout(initWebSocket, 2000);
+};
+
+window.onload = function() {
+  initWebSocket();
+};
+
+function saveTime() {
+  var time = document.getElementById('set-time');
+  let[hours, mins] = time.value.split(":");
+  console.log("Hour: " + hours + " - Minutes: " + mins);
+  sendAjaxPost('/set-timer?on-h='+hours+'&on-m='+mins,
+    (resp)=>{alert(resp.responseText);});
+}
+
+function saveWiFiPw() {
+  let ssid=document.getElementById('wf-ssid').value;
+  let pw=document.getElementById('wf-pw').value;
+  if(ssid!=''){
+  sendAjaxPost('/save-wifi?ssid='+ssid+'&pw='+pw,
+    (resp)=>{alert(resp.responseText);});
+  }else{alert('Failed to send!');}
+};
+
+function wsSend(text) {
+  const int_arr = new Int32Array(1);
+  int_arr[0] = text;
+  websocket.send(int_arr);
+}
+
+function sendAjaxPost(path, onLoadCb=null) {
+  const xhttp = new XMLHttpRequest();
+  xhttp.onload=function() {onLoadCb?.(this);};
+  xhttp.open('POST', path);
+  xhttp.send();
+};
+  </script>
+</html>
