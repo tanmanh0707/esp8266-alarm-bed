@@ -3,12 +3,13 @@
 #include <SPI.h>
 #include <FS.h>
 #include <HX711.h>
-
+#include <Servo.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
 #define BUZZER_PIN                    D8
+#define SERVO_PIN                     D5
 
 /* TIME */
 #define TIME_SECOND                   1000    //ms
