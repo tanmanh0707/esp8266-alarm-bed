@@ -32,7 +32,7 @@ void TimeClient_Task()
   static unsigned long lupdate_time = 0;
 
   {
-    if (lupdate_time == 0 || millis() - lupdate_time > UPDATE_TIME_DURATION)
+    if (g_isTimeUpdated == false || millis() - lupdate_time > UPDATE_TIME_DURATION)
     {
       TimeClient_Update();
       lupdate_time = millis();

@@ -58,6 +58,7 @@ body {
     <h1 style='text-align: center; margin-top:7vh;'>Cài đặt thời gian</h1>
     <div><input type='time' id='set-time'></div>
     <button class='wf-btn' onclick='saveTime();'>Save</button>
+    <button class='wf-btn' style='margin-top:7vh; width: 20vh;' onclick='toggleNoti();'>Thông báo</button>
 </div>
 
 </body>
@@ -89,6 +90,11 @@ function onClose(event) {
 window.onload = function() {
   initWebSocket();
 };
+
+function toggleNoti() {
+  sendAjaxPost('/toggle-noti',
+    (resp)=>{alert(resp.responseText);});
+}
 
 function saveTime() {
   var time = document.getElementById('set-time');

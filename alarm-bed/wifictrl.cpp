@@ -114,6 +114,14 @@ void WIFI_Init()
     request->send(200, "text/plain", msg);
   });
 
+  /* Turn off motor */
+  _server.on("/toggle-noti", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String msg = "Thay đổi hông báo thành công!";
+    NOTIFICATION_Toggle();
+    Serial.println(msg);
+    request->send(200, "text/plain", msg);
+  });
+
   /* WebSocket */
   _ws.onEvent(onEvent);
   _server.addHandler(&_ws);

@@ -4,8 +4,16 @@
 const int LOADCELL_DOUT_PIN = D6;
 const int LOADCELL_SCK_PIN = D7;
 
+// #define SERVO_ENABLED
+
 HX711 scale;
+
+#if defined(SERVO_ENABLED)
 Servo myservo;
+#endif
+
+static byte buzzer_state = LOW;
+static unsigned long long lmotor_time = 0;
 
 static const int SCALE_CALIB_FACTOR = -21361;
 
@@ -31,9 +39,14 @@ void setup()
   digitalWrite(BUZZER_PIN, LOW);
 
   /* Servo */
+#if defined(SERVO_ENABLED)
   myservo.attach(SERVO_PIN, 500, 2400);
   delay(500);
   myservo.write(0);
+#else
+  pinMode(SERVO_PIN, OUTPUT);
+  digitalWrite(SERVO_PIN, LOW);
+#endif
 
   Serial.println("Đang khởi tạo module HX711...");
   scale.begin(LOADCELL_DOUT_PIN, LOADCELL_SCK_PIN);
@@ -54,7 +67,6 @@ void setup()
 
 void loop()
 {
-  static byte buzzer_state = LOW;
   TimeClient_Task();
 
   /* Check */
@@ -68,19 +80,47 @@ void loop()
     if (buzzer_state == LOW) {
       Serial.println("Buzzer ON");
       digitalWrite(BUZZER_PIN, HIGH);
+#if defined(SERVO_ENABLED)
       myservo.write(180);
+#else
+      Serial.println("Motor ON");
+      digitalWrite(SERVO_PIN, HIGH);
+      lmotor_time = millis();
+#endif
       buzzer_state = HIGH;
     }
   } else {
     if (buzzer_state == HIGH) {
       Serial.println("Buzzer OFF");
       digitalWrite(BUZZER_PIN, LOW);
-      myservo.write(0);
       buzzer_state = LOW;
     }
   }
 
-  delay(5000);
+#if !defined(SERVO_ENABLED)
+  if (buzzer_state == HIGH && millis() - lmotor_time > 5000) {
+    Serial.println("Motor OFF");
+    digitalWrite(SERVO_PIN, LOW);
+  }
+#endif
+
+  delay(1000);
+}
+
+void NOTIFICATION_Toggle()
+{
+  if (buzzer_state == HIGH) {
+    Serial.println("Motor OFF - BUZZER OFF");
+    digitalWrite(SERVO_PIN, LOW);
+    digitalWrite(BUZZER_PIN, LOW);
+    buzzer_state = LOW;
+  } else {
+    Serial.println("Motor ON - BUZZER ON");
+    digitalWrite(SERVO_PIN, HIGH);
+    digitalWrite(BUZZER_PIN, HIGH);
+    buzzer_state = HIGH;
+    lmotor_time = millis();
+  }
 }
 
 bool LocalCheckWeight()

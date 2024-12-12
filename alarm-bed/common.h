@@ -58,3 +58,4 @@ bool TimeClient_IsUpdated();
 void TimeClient_GetTime(uint8_t &hrs, uint8_t &min);
 
 void WIFI_Init();
+void NOTIFICATION_Toggle();
